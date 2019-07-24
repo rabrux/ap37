@@ -9,8 +9,12 @@
       "hidden": true
     },
     {
-      "name": "ProtonMail",
-      "color": "#f00"
+      "name": "ap37",
+      "hidden": true
+    },
+    {
+      "name": "Telegram",
+      "color": "#5682a3"
     }
   ]
 }
