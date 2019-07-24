@@ -13,8 +13,17 @@
       "hidden": true
     },
     {
+      "name": "SIM Toolkit",
+      "hidden": true
+    },
+    {
       "name": "Telegram",
       "color": "#5682a3"
+    },
+    {
+      "name": "Twitter Lite",
+      "color": "#1da1f2",
+      "alias": "tw"
     }
   ]
 }
