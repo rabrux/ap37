@@ -4,37 +4,13 @@
 
   let node;
 
-  const config = {
+  let config = {
     name: '54n70n1',
     background: [ '#335533', '#116611' ],
     color: '#0c0',
     hover: '#0f0',
-    apps: [
-      {
-        name: 'AnySoftKeyboard',
-        hidden: true
-      },
-      {
-        name: 'ProtonMail',
-        color: '#f00'
-      }
-    ]
+    apps: []
   };
-
-
-  require( 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js' )
-    .then( function( a ) {
-      const socket = io( 'http://localhost:3000' );
-      socket.on( 'connect', function() {
-        print( 0, h - 3, 'connected' );
-      } );
-      socket.on( 'message', function( message ) {
-        print( 0, h - 4, 'message: ' + message );
-      } );
-    } )
-    .catch( function( e ) {
-      debug( e )
-    } )
 
   function init() {
     ap37.setTextSize(11);
@@ -192,21 +168,21 @@
       }
     },
     printApp: function (app, highlight) {
+      let name = app.name
+      if ( app.alias )
+        name = app.alias
       print(app.x0, app.y, '_' +
-        app.name.substring(0, apps.appWidth - 2),
+        name.substring(0, apps.appWidth - 2),
         highlight ? config.hover : app.color ? app.color : config.color);
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
-        print(app.x0 + 1, app.y, app.name.substring(0, 1), config.hover);
+        print(app.x0 + 1, app.y, name.substring(0, 1), app.color ? app.color : config.color );
       }
     },
     init: function () {
-      // DEBUG
-      // debug( 'lorem' );
-      // DEBUG
       apps.list = ap37.getApps();
 
       // apply apps configuration
@@ -217,8 +193,6 @@
 
         if ( typeof configItem !== 'undefined' && configItem !== null ) {
           let newItem = { ...item, ...configItem }
-          // debug( configItem )
-          debug( newItem )
           if ( !newItem.hidden )
             result.push( newItem )
         } else
@@ -273,83 +247,6 @@
       }
     }
   };
-
-  // var markets = {
-  //   update: function () {
-  //     get('https://api.cryptowat.ch/markets/prices', function (response) {
-  //       try {
-  //         var result = JSON.parse(response).result,
-  //           marketString =
-  //             'BTC' + Math.floor(result['market:kraken:btcusd']) +
-  //             ' BCH' + Math.floor(result['market:kraken:bchusd']) +
-  //             ' ETH' + Math.floor(result['market:kraken:ethusd']) +
-  //             ' ETC' + Math.floor(result['market:kraken:etcusd']) +
-  //             ' LTC' + Math.floor(result['market:kraken:ltcusd']) +
-  //             ' ZEC' + Math.floor(result['market:kraken:zecusd']);
-  //         background.printPattern(0, w, h - 7);
-  //         print(0, h - 7, marketString);
-  //       } catch (e) {
-  //       }
-  //     });
-  //   },
-  //   init: function () {
-  //     print(0, h - 8, '// Markets');
-  //     markets.update();
-  //     setInterval(markets.update, 60000);
-  //   }
-  // };
-
-  // var transmissions = {
-  //   list: [],
-  //   update: function () {
-  //     get('https://dangeru.us/api/v2/board/cyb', function (response) {
-  //       try {
-  //         var result = JSON.parse(response),
-  //           line = h - 4,
-  //           t = transmissions;
-  //         t.list = [];
-  //         for (var i = 0; i < result.length && t.list.length < 3; i++) {
-  //           if (!result[i].sticky) {
-  //             var transmission = {
-  //               title: result[i].title,
-  //               url: 'https://dangeru.us/cyb/thread/' + result[i].post_id,
-  //               y: line
-  //             };
-  //             t.list.push(transmission);
-  //             background.printPattern(0, w, line);
-  //             t.printTransmission(transmission, false);
-  //             line++;
-  //           }
-  //         }
-  //       } catch (e) {
-  //       }
-  //     });
-  //   },
-  //   printTransmission: function (transmission, highlight) {
-  //     print(0, transmission.y, transmission.title,
-  //       highlight ? '#ff3333' : '#ffffff');
-  //     if (highlight) {
-  //       setTimeout(function () {
-  //         transmissions.printTransmission(transmission, false);
-  //       }, 1000);
-  //     }
-  //   },
-  //   init: function () {
-  //     print(0, h - 5, '// Transmissions');
-  //     transmissions.update();
-  //     setInterval(transmissions.update, 3600000);
-  //   },
-  //   onTouch: function (x, y) {
-  //     for (var i = 0; i < transmissions.list.length; i++) {
-  //       if (transmissions.list[i].y === y &&
-  //         x <= transmissions.list[i].title.length) {
-  //         transmissions.printTransmission(transmissions.list[i], true);
-  //         ap37.openLink(transmissions.list[i].url);
-  //         return;
-  //       }
-  //     }
-  //   }
-  // };
 
   var wordGlitch = {
     tick: 0,
@@ -489,39 +386,31 @@
     return result;
   }
 
+  function loadConfig() {
+    return new Promise( function( resolve, reject ) {
+      get( 'https://raw.githubusercontent.com/rabrux/ap37/master/config.json', function( responseBody ) {
+        resolve( JSON.parse( responseBody ) )
+      } )
+    } )
+  }
+
   function debug( message ) {
     if ( message instanceof Error )
       message = message.toString()
     if ( typeof message === 'object' )
       message = JSON.stringify( message )
-    print( 0, h - 5, message );
+    ap37.print(0, h - 5, message, '#f00');
   }
 
-  function require( cdn ) {
-    return new Promise( function( resolve, reject ) {
-
-      var lib = document.createElement( 'script' );
-      lib.src = cdn
-
-      lib.onload = function ( a ) {
-        return resolve( a )
-      }
-
-      lib.onreadystatechange = function( a ) {
-        return resolve( a )
-      }
-
-      lib.onerror = function( a ) {
-        return reject( a )
-      }
-
-      document.head.appendChild( lib );
-
+  loadConfig()
+    .then( function( lorem ) {
+      config = { ...config, ...lorem }
+      init()
+    } )
+    .catch( function( err ) {
+      debug( err )
     } )
 
-  }
-
-  init();
 })();
 
 /**
