@@ -1,0 +1,16 @@
+{
+  "name": "54n70n1",
+  "background": [ "#353", "#161" ],
+  "color": "#0c0",
+  "hover": "#0f0",
+  "apps": [
+    {
+      "name": "AnySoftKeyboard",
+      "hidden": true
+    },
+    {
+      "name": "ProtonMail",
+      "color": "#f00"
+    }
+  ]
+}

@@ -2,6 +2,40 @@
   'use strict';
   var w, h;
 
+  let node;
+
+  const config = {
+    name: '54n70n1',
+    background: [ '#335533', '#116611' ],
+    color: '#0c0',
+    hover: '#0f0',
+    apps: [
+      {
+        name: 'AnySoftKeyboard',
+        hidden: true
+      },
+      {
+        name: 'ProtonMail',
+        color: '#f00'
+      }
+    ]
+  };
+
+
+  require( 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js' )
+    .then( function( a ) {
+      const socket = io( 'http://localhost:3000' );
+      socket.on( 'connect', function() {
+        print( 0, h - 3, 'connected' );
+      } );
+      socket.on( 'message', function( message ) {
+        print( 0, h - 4, 'message: ' + message );
+      } );
+    } )
+    .catch( function( e ) {
+      debug( e )
+    } )
+
   function init() {
     ap37.setTextSize(11);
 
@@ -9,19 +43,16 @@
     h = ap37.getScreenHeight();
 
     background.init();
-    print(0, 0, 'ap37-c504d3a0');
+    print(0, 0, config.name );
     time.init();
     battery.init();
     notifications.init();
     apps.init();
-    markets.init();
-    transmissions.init();
     print(w - 3, h - 1, 'EOF');
 
     ap37.setOnTouchListener(function (x, y) {
       notifications.onTouch(x, y);
       apps.onTouch(x, y);
-      transmissions.onTouch(x, y);
       lineGlitch.onTouch(x, y);
       wordGlitch.onTouch(x, y);
     });
@@ -36,17 +67,17 @@
     printPattern: function (x0, xf, y) {
       print(x0, y,
         background.pattern.substring(y * w + x0, y * w + xf),
-        '#333333');
+        config.background[ 1 ]);
     },
     init: function () {
       background.pattern = rightPad(script, h * w, ' ');
 
       for (var i = 0; i < h; i++) {
         background.buffer.push(background.pattern.substr(i * w, w));
-        background.bufferColors.push(arrayFill('#333333', w));
+        background.bufferColors.push(arrayFill(config.background[ 1 ], w));
       }
 
-      ap37.printLines(background.buffer, '#333333');
+      ap37.printLines(background.buffer, config.background[ 0 ]);
     }
   };
 
@@ -105,7 +136,7 @@
         name = name.substring(0, length) + "... +" +
           (notifications.list.length - 3);
       }
-      print(0, notification.y, name, highlight ? '#ff3333' : '#ffffff');
+      print(0, notification.y, name, highlight ? config.hover : config.color);
       if (highlight) {
         setTimeout(function () {
           notifications.printNotification(notification, false);
@@ -135,7 +166,7 @@
     list: [],
     lineHeight: 2,
     topMargin: 6,
-    bottomMargin: 8,
+    bottomMargin: 5,
     lines: 0,
     appWidth: 6,
     appsPerLine: 0,
@@ -163,17 +194,39 @@
     printApp: function (app, highlight) {
       print(app.x0, app.y, '_' +
         app.name.substring(0, apps.appWidth - 2),
-        highlight ? '#ff3333' : '#999999');
+        highlight ? config.hover : app.color ? app.color : config.color);
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
-        print(app.x0 + 1, app.y, app.name.substring(0, 1), '#ffffff');
+        print(app.x0 + 1, app.y, app.name.substring(0, 1), config.hover);
       }
     },
     init: function () {
+      // DEBUG
+      // debug( 'lorem' );
+      // DEBUG
       apps.list = ap37.getApps();
+
+      // apply apps configuration
+      apps.list = apps.list.reduce( function( result, item ) {
+        let configItem = config.apps.filter( function( el ) {
+          return el.name === item.name
+        } ).shift()
+
+        if ( typeof configItem !== 'undefined' && configItem !== null ) {
+          let newItem = { ...item, ...configItem }
+          // debug( configItem )
+          debug( newItem )
+          if ( !newItem.hidden )
+            result.push( newItem )
+        } else
+          result.push( item )
+
+        return result
+      }, [] )
+
       apps.lines = Math.floor(
         (h - apps.topMargin - apps.bottomMargin) / apps.lineHeight);
       apps.appsPerLine = Math.ceil(apps.list.length / apps.lines);
@@ -221,82 +274,82 @@
     }
   };
 
-  var markets = {
-    update: function () {
-      get('https://api.cryptowat.ch/markets/prices', function (response) {
-        try {
-          var result = JSON.parse(response).result,
-            marketString =
-              'BTC' + Math.floor(result['market:kraken:btcusd']) +
-              ' BCH' + Math.floor(result['market:kraken:bchusd']) +
-              ' ETH' + Math.floor(result['market:kraken:ethusd']) +
-              ' ETC' + Math.floor(result['market:kraken:etcusd']) +
-              ' LTC' + Math.floor(result['market:kraken:ltcusd']) +
-              ' ZEC' + Math.floor(result['market:kraken:zecusd']);
-          background.printPattern(0, w, h - 7);
-          print(0, h - 7, marketString);
-        } catch (e) {
-        }
-      });
-    },
-    init: function () {
-      print(0, h - 8, '// Markets');
-      markets.update();
-      setInterval(markets.update, 60000);
-    }
-  };
+  // var markets = {
+  //   update: function () {
+  //     get('https://api.cryptowat.ch/markets/prices', function (response) {
+  //       try {
+  //         var result = JSON.parse(response).result,
+  //           marketString =
+  //             'BTC' + Math.floor(result['market:kraken:btcusd']) +
+  //             ' BCH' + Math.floor(result['market:kraken:bchusd']) +
+  //             ' ETH' + Math.floor(result['market:kraken:ethusd']) +
+  //             ' ETC' + Math.floor(result['market:kraken:etcusd']) +
+  //             ' LTC' + Math.floor(result['market:kraken:ltcusd']) +
+  //             ' ZEC' + Math.floor(result['market:kraken:zecusd']);
+  //         background.printPattern(0, w, h - 7);
+  //         print(0, h - 7, marketString);
+  //       } catch (e) {
+  //       }
+  //     });
+  //   },
+  //   init: function () {
+  //     print(0, h - 8, '// Markets');
+  //     markets.update();
+  //     setInterval(markets.update, 60000);
+  //   }
+  // };
 
-  var transmissions = {
-    list: [],
-    update: function () {
-      get('https://dangeru.us/api/v2/board/cyb', function (response) {
-        try {
-          var result = JSON.parse(response),
-            line = h - 4,
-            t = transmissions;
-          t.list = [];
-          for (var i = 0; i < result.length && t.list.length < 3; i++) {
-            if (!result[i].sticky) {
-              var transmission = {
-                title: result[i].title,
-                url: 'https://dangeru.us/cyb/thread/' + result[i].post_id,
-                y: line
-              };
-              t.list.push(transmission);
-              background.printPattern(0, w, line);
-              t.printTransmission(transmission, false);
-              line++;
-            }
-          }
-        } catch (e) {
-        }
-      });
-    },
-    printTransmission: function (transmission, highlight) {
-      print(0, transmission.y, transmission.title,
-        highlight ? '#ff3333' : '#ffffff');
-      if (highlight) {
-        setTimeout(function () {
-          transmissions.printTransmission(transmission, false);
-        }, 1000);
-      }
-    },
-    init: function () {
-      print(0, h - 5, '// Transmissions');
-      transmissions.update();
-      setInterval(transmissions.update, 3600000);
-    },
-    onTouch: function (x, y) {
-      for (var i = 0; i < transmissions.list.length; i++) {
-        if (transmissions.list[i].y === y &&
-          x <= transmissions.list[i].title.length) {
-          transmissions.printTransmission(transmissions.list[i], true);
-          ap37.openLink(transmissions.list[i].url);
-          return;
-        }
-      }
-    }
-  };
+  // var transmissions = {
+  //   list: [],
+  //   update: function () {
+  //     get('https://dangeru.us/api/v2/board/cyb', function (response) {
+  //       try {
+  //         var result = JSON.parse(response),
+  //           line = h - 4,
+  //           t = transmissions;
+  //         t.list = [];
+  //         for (var i = 0; i < result.length && t.list.length < 3; i++) {
+  //           if (!result[i].sticky) {
+  //             var transmission = {
+  //               title: result[i].title,
+  //               url: 'https://dangeru.us/cyb/thread/' + result[i].post_id,
+  //               y: line
+  //             };
+  //             t.list.push(transmission);
+  //             background.printPattern(0, w, line);
+  //             t.printTransmission(transmission, false);
+  //             line++;
+  //           }
+  //         }
+  //       } catch (e) {
+  //       }
+  //     });
+  //   },
+  //   printTransmission: function (transmission, highlight) {
+  //     print(0, transmission.y, transmission.title,
+  //       highlight ? '#ff3333' : '#ffffff');
+  //     if (highlight) {
+  //       setTimeout(function () {
+  //         transmissions.printTransmission(transmission, false);
+  //       }, 1000);
+  //     }
+  //   },
+  //   init: function () {
+  //     print(0, h - 5, '// Transmissions');
+  //     transmissions.update();
+  //     setInterval(transmissions.update, 3600000);
+  //   },
+  //   onTouch: function (x, y) {
+  //     for (var i = 0; i < transmissions.list.length; i++) {
+  //       if (transmissions.list[i].y === y &&
+  //         x <= transmissions.list[i].title.length) {
+  //         transmissions.printTransmission(transmissions.list[i], true);
+  //         ap37.openLink(transmissions.list[i].url);
+  //         return;
+  //       }
+  //     }
+  //   }
+  // };
 
   var wordGlitch = {
     tick: 0,
@@ -318,7 +371,7 @@
           g.text.push(Math.random().toString(36).substr(2, g.length));
         }
 
-        ap37.print(g.x, g.y, g.text[g.tick], '#666666');
+        ap37.print(g.x, g.y, g.text[g.tick], '#660000');
         g.tick++;
       } else if (g.tick === 5) { // remove glitch
         ap37.printMultipleColors(g.x, g.y,
@@ -330,7 +383,7 @@
           clearInterval(wordGlitch.intervalId);
         }
       } else {
-        ap37.print(g.x, g.y, g.text[g.tick], '#666666');
+        ap37.print(g.x, g.y, g.text[g.tick], '#660000');
         g.tick++;
       }
     },
@@ -367,7 +420,7 @@
           ap37.printMultipleColors(0, g.line,
             leftPad(background.buffer[g.line]
               .substring(0, w - offset), w, ' '),
-            arrayFill('#ffffff', offset)
+            arrayFill('#f00', offset)
               .concat(background.bufferColors[g.line]
                 .slice(0, w - offset))
           );
@@ -396,7 +449,7 @@
   //utils
 
   function print(x, y, text, color) {
-    color = color || '#ffffff';
+    color = color || config.color;
     background.buffer[y] = background.buffer[y].substr(0, x) + text +
       background.buffer[y].substr(x + text.length);
     for (var i = x; i < x + text.length; i++) {
@@ -436,9 +489,49 @@
     return result;
   }
 
+  function debug( message ) {
+    if ( message instanceof Error )
+      message = message.toString()
+    if ( typeof message === 'object' )
+      message = JSON.stringify( message )
+    print( 0, h - 5, message );
+  }
+
+  function require( cdn ) {
+    return new Promise( function( resolve, reject ) {
+
+      var lib = document.createElement( 'script' );
+      lib.src = cdn
+
+      lib.onload = function ( a ) {
+        return resolve( a )
+      }
+
+      lib.onreadystatechange = function( a ) {
+        return resolve( a )
+      }
+
+      lib.onerror = function( a ) {
+        return reject( a )
+      }
+
+      document.head.appendChild( lib );
+
+    } )
+
+  }
+
   init();
 })();
 
+/**
+ * PARENT PROJECT
+ */
 // pull requests github.com/apseren/ap37
 // btc donations 1MvZ1VsC2eCHv8DFfUNk474ipNcqWmpV93
 // eth donations 0x736F85B150eF7f75ba1F8729912e950BF22014d4
+
+/**
+ * CURRENT
+ */
+// pull requests github.com/rabrux/ap37
