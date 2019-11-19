@@ -9,12 +9,28 @@
       "hidden": true
     },
     {
+      "name": "Browser",
+      "hidden": true
+    },
+    {
       "name": "ap37",
+      "hidden": true
+    },
+    {
+      "name": "Email",
       "hidden": true
     },
     {
       "name": "Firefox",
       "color": "#ff433f"
+    },
+    {
+      "name": "Messaging",
+      "hidden": true
+    },
+    {
+      "name": "Orbot",
+      "color": "#59316b"
     },
     {
       "name": "ProtonMail",
@@ -33,6 +49,11 @@
       "color": "#5682a3"
     },
     {
+      "name": "Tor Browser",
+      "color": "#59316b",
+      "alias": "orfox"
+    },
+    {
       "name": "Twitter Lite",
       "color": "#1da1f2",
       "alias": "tw"
@@ -41,6 +62,10 @@
       "name": "Twitter",
       "color": "#1da1f2",
       "alias": "tw"
+    },
+    {
+      "name": "Voice Search",
+      "hidden": true
     },
     {
       "name": "WhatsApp",
