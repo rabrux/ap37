@@ -13,8 +13,20 @@
       "hidden": true
     },
     {
+      "name": "Firefox",
+      "color": "#ff433f"
+    },
+    {
+      "name": "ProtonMail",
+      "color": "#9199cb"
+    },
+    {
       "name": "SIM Toolkit",
       "hidden": true
+    },
+    {
+      "name": "Silence",
+      "color": "#7568ae"
     },
     {
       "name": "Telegram",
@@ -24,6 +36,19 @@
       "name": "Twitter Lite",
       "color": "#1da1f2",
       "alias": "tw"
+    },
+    {
+      "name": "Twitter",
+      "color": "#1da1f2",
+      "alias": "tw"
+    },
+    {
+      "name": "WhatsApp",
+      "color": "#1ebea5"
+    },
+    {
+      "name": "Zoom",
+      "color": "#2073d9"
     }
   ]
 }
